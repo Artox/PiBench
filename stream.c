@@ -34,17 +34,14 @@ void STREAM_copy(uint32_t *__restrict__ src, uint32_t *__restrict__ dest, size_t
  * array size should be 4x128KB=512KB
  */
 
+// data
+#define NUM_BYTES (0x100000*24)
+uint32_t src[NUM_BYTES/4];
+uint32_t dest[NUM_BYTES/4];
 
-int main()
+void main()
 {
-	// create buffers for stream copy
-	// 0x400 = 1024 Byte = 1kB
-	size_t size = 0x400 * 0x400 * 24; // 24MB
-	//size_t size = 0x400 * 512; // 512KB
-	//size_t size = 0x400 * 512 * 10; // ~5MB
-	//size_t size = 0x400 * 0x400 * 100;
-	uint32_t *src = malloc(sizeof(uint32_t)*size);
-	uint32_t *dest = malloc(sizeof(uint32_t)*size);
+	size_t size = NUM_BYTES/4;
 
 	// declare Timer
 	void *timer = Timer_create();
@@ -84,8 +81,6 @@ int main()
 
 
 	// clean up
-	Timer_delete(timer);
 	free(times);
-	free(dest);
-	free(src);
+	Timer_delete(timer);
 }
