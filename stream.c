@@ -36,19 +36,22 @@ void STREAM_copy(uint32_t *__restrict__ src, uint32_t *__restrict__ dest, size_t
 
 // data
 #define NUM_BYTES (0x100000*24)
-uint32_t src[NUM_BYTES/4];
-uint32_t dest[NUM_BYTES/4];
+uint32_t src[NUM_BYTES/sizeof(uint32_t)];
+uint32_t dest[NUM_BYTES/sizeof(uint32_t)];
+
+#define NUM_EXECUTIONS 5
+uint32_t times[NUM_EXECUTIONS];
 
 void main()
 {
-	size_t size = NUM_BYTES/4;
+	size_t size = NUM_BYTES/sizeof(uint32_t);
+	size_t N = NUM_EXECUTIONS;
 
 	// declare Timer
 	void *timer = Timer_create();
 
 	// run STREAM_copy
 	// do it N times
-	size_t N = 5;
 	uint32_t *times = malloc(sizeof(uint32_t)*N);
 	for(uint8_t i = 0; i < 10; i++)
 	{
@@ -69,18 +72,17 @@ void main()
 		if(max_msec < msec) max_msec = msec;
 		if(min_msec > msec) min_msec = msec;
 	}
-	double min_mb_sec = ((double)size) / ((double)1024*1024) * 1000.0f / ((double)max_msec);
-	double avg_mb_sec = ((double)size) / ((double)1024*1024) * 1000.0f / ((double)avg_msec);
-	double max_mb_sec = ((double)size) / ((double)1024*1024) * 1000.0f / ((double)min_msec);
+	double min_mb_sec = ((double)NUM_BYTES) / ((double)0x100000) * 1000.0f / ((double)max_msec);
+	double avg_mb_sec = ((double)NUM_BYTES) / ((double)0x100000) * 1000.0f / ((double)avg_msec);
+	double max_mb_sec = ((double)NUM_BYTES) / ((double)0x100000) * 1000.0f / ((double)min_msec);
 
 	// print statistics
-	printf("Copying %fMP took beetween %fms and %fms, on average %fms\n", ((double)size) / ((double)1024*1024), min_msec, max_msec, avg_msec);
+	printf("Copying %fMB took beetween %fms and %fms, on average %fms\n", (NUM_BYTES) / ((double)0x100000), min_msec, max_msec, avg_msec);
 	printf("Minimum speed: %fMB/s\n", min_mb_sec);
 	printf("Maximum speed: %fMB/s\n", max_mb_sec);
 	printf("Average speed: %fMB/s\n", avg_mb_sec);
 
 
 	// clean up
-	free(times);
 	Timer_delete(timer);
 }

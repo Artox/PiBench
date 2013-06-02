@@ -1,4 +1,4 @@
-CFLAGS=-std=c99 -g
+CFLAGS=-std=c99 -O
 
 all: stream
 
