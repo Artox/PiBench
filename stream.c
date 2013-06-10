@@ -52,7 +52,6 @@ void main()
 
 	// run STREAM_copy
 	// do it N times
-	uint32_t *times = malloc(sizeof(uint32_t)*N);
 	for(uint8_t i = 0; i < 10; i++)
 	{
 		Timer_start(timer);
@@ -64,7 +63,7 @@ void main()
 	// generate some statistics
 	double avg_msec = 0;
 	uint32_t max_msec = 0;
-	uint32_t min_msec = -1;
+	uint32_t min_msec = 2147483647;
 	for(uint8_t i = 0; i < 10; i++)
 	{
 		uint32_t msec = times[i];

@@ -19,6 +19,11 @@ void Timer::stop()
 	t_end = clock();
 }
 
+void Timer::continue_()
+{
+	t_start = -ticks() + clock();
+}
+
 uint32_t Timer::ticks()
 {
 	return t_end - t_start;
@@ -52,6 +57,11 @@ void Timer_start(void *t)
 void Timer_stop(void *t)
 {
 	((Timer *)t)->stop();
+}
+
+void Timer_continue(void *t)
+{
+	((Timer *)t)->continue_();
 }
 
 uint32_t Timer_seconds(void *t)

@@ -1,11 +1,11 @@
 CXX=g++
-CXXFLAGS=-O2
-LDFLAGS=-lexplain
+CXXFLAGS=-std=c++0x -O2
+LDFLAGS=-lexplain -L../Timer/.libs
 
 all: ping pong
 
 ping: net.o ping.o
-	$(CXX) $(CXXFLAGS) -o $@ net.o ping.o $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ net.o ping.o $(LDFLAGS) -lTimer
 
 pong: net.o pong.o
 	$(CXX) $(CXXFLAGS) -o $@ net.o pong.o $(LDFLAGS)

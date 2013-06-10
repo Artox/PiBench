@@ -16,6 +16,7 @@ public:
 	Timer();
 	void start();
 	void stop();
+	void continue_();
 	uint32_t ticks();
 	uint32_t seconds();
 	uint32_t milliseconds();

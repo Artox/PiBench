@@ -90,12 +90,12 @@ void Client::connect(const char *hostname, int port)
 
 void Client::synchronous_send(char *data, const size_t size)
 {
-	synchronous_send(s, data, size);
+	::synchronous_send(s, data, size);
 }
 
 void Client::synchronous_recv(char *buffer, size_t bytes)
 {
-	synchronous_recv(s, buffer, bytes);
+	::synchronous_recv(s, buffer, bytes);
 }
 
 Client::~Client()
@@ -108,7 +108,7 @@ void synchronous_send(int socket, char *data, size_t size)
 	size_t bytes_left = size;
 	char *ptr = data;
 	do {
-		printf("Sending %u bytes\n", bytes_left);
+		fprintf(stderr, "Sending %u bytes\n", bytes_left);
 		int bytes = explain_write_or_die(socket, ptr, bytes_left);
 		ptr += bytes;
 		bytes_left -= bytes;
@@ -120,7 +120,7 @@ void synchronous_recv(int socket, char *buffer, size_t bytes)
 	size_t bytes_left = bytes;
 	char *ptr = buffer;
 	do {
-		printf("Waiting for %u bytes\n", bytes_left);
+		fprintf(stderr, "Waiting for %u bytes\n", bytes_left);
 		int bytes = explain_read_or_die(socket, ptr, bytes_left);
 		ptr += bytes;
 		bytes_left -= bytes;

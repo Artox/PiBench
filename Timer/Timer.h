@@ -15,6 +15,7 @@ extern "C" {
 void *Timer_create();
 void Timer_start(void *t);
 void Timer_stop(void *t);
+void Timer_continue(void *t);
 uint32_t Timer_seconds(void *t);
 uint32_t Timer_milliseconds(void *t);
 void Timer_delete(void *t);
