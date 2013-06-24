@@ -65,7 +65,7 @@ void run(const char *hostname, int port, size_t bytes)
 
 	//printf("Sending and Receiving %uB(%ukB; %uMB) took %ums\n", size, size/0x400, size/0x100000, timer.milliseconds());
 	// simple output for automatic parsing
-	printf("%u;%u\n", size, timer.milliseconds());
+	printf("%u;%u\n", bytes, timer.milliseconds());
 
 	// end
 	return;

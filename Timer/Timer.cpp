@@ -1,8 +1,8 @@
 // C++ Timer Class
 #include "Timer.hpp"
 
-#include <ctime>
-using std::clock;
+#include <sys/time.h>
+#include <libexplain/gettimeofday.h>
 
 Timer::Timer()
 {
@@ -11,32 +11,32 @@ Timer::Timer()
 
 void Timer::start()
 {
-	t_start = clock();
+	explain_gettimeofday_or_die(&t_start, 0);
 }
 
 void Timer::stop()
 {
-	t_end = clock();
+	explain_gettimeofday_or_die(&t_end, 0);
 }
 
-void Timer::continue_()
+/*void Timer::continue_()
 {
 	t_start = -ticks() + clock();
-}
+}*/
 
-uint32_t Timer::ticks()
+/*uint32_t Timer::ticks()
 {
 	return t_end - t_start;
-}
+}*/
 
 uint32_t Timer::seconds()
 {
-	return ticks() / CLOCKS_PER_SEC;
+	return t_end.tv_sec - t_start.tv_sec;
 }
 
 uint32_t Timer::milliseconds()
 {
-	return ticks() * 1000 / CLOCKS_PER_SEC;
+	return (t_end.tv_sec - t_start.tv_sec)*1000 + (t_end.tv_usec - t_start.tv_usec)/1000;
 }
 
 
@@ -59,10 +59,10 @@ void Timer_stop(void *t)
 	((Timer *)t)->stop();
 }
 
-void Timer_continue(void *t)
+/*void Timer_continue(void *t)
 {
 	((Timer *)t)->continue_();
-}
+}*/
 
 uint32_t Timer_seconds(void *t)
 {

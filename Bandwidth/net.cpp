@@ -100,7 +100,7 @@ void Client::synchronous_recv(char *buffer, size_t bytes)
 
 Client::~Client()
 {
-	explain_close_or_die(s);
+	close(s);
 }
 
 void synchronous_send(int socket, char *data, size_t size)
