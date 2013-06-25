@@ -1,3 +1,6 @@
+#include <string>
+using namespace std;
+
 class MPIApplication
 {
 public:
@@ -9,4 +12,13 @@ public:
 
 	// Gibt den Rang bezüglich naderer MPI Threads auf diesem Knoten an
 	int GetLocalRank();
+
+	string GetProcessorName();
+	
+	// gibt die ANzahl MPI Knoten zurück
+	int GetGlobalProcesses();
+	
+	void Recv(void *buffer, size_t count, int source);
+
+	void Send(void *buffer, size_t count, int dest);
 };

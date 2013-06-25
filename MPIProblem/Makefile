@@ -1,4 +1,4 @@
-CXX=/usr/lib64/mpi/gcc/openmpi/bin/mpic++
+CXX=mpic++
 CXXFLAGS=
 OBJECTS=MPIApplication.o main.o
 
