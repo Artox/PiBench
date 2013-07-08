@@ -18,17 +18,20 @@ class Server
 {
 private:
 	int s;
+	bool r;
+
 public:
+	// Erzeugt einen neuen Server an gegebenem Port
 	Server();
 
-	// binds to given port
-	void bind(int port);
+	// Server MainLoop. Wartet auf Eingehende Verbindungen
+	void run(int port);
 
-	// starts listening for incoming connections
-	void listen(int backlog = 5);
-
-	// accepts 1 connection
-	int accept();
+	// Wird bei Eingang einer neuen Verbindung ausgeführt.
+	virtual void onAccept(int cs) = 0;
+	
+	// Beendet den Server *irgendwann*
+	void shutdown();
 
 	// Closes Socket properly
 	~Server();

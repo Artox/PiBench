@@ -7,20 +7,8 @@
 
 #include "net.h"
 
-int main()
-{
-	// Start TCP Server
-	Server srv;
-	srv.bind(1423);
-	srv.listen();
-
-	// do forever
-	bool running = true;
-	while(running)
-	{
-		// accept a client connection
-		int _c = srv.accept();
-
+class PongServer : public Server {
+	public void onAccept(int cs) {
 		// prepare array for receiving data. 200MB Maximum here.
 		char *buffer = (char *)malloc(0x100000*200);
 
@@ -39,6 +27,13 @@ int main()
 		synchronous_send(_c, buffer, size);
 		free(buffer);
 	}
+}
+
+int main()
+{
+	// Start TCP Server
+	PongServer srv;
+	srv.run(1423);
 
 	// end
 	return 0;

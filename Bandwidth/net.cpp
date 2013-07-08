@@ -17,6 +17,8 @@
 
 #include <cstring>
 using std::memset;
+#include <iostream>
+using std::cout;
 
 Packet::Packet(size_t _size) : size(_size), buffer(0)
 {
@@ -38,8 +40,13 @@ Server::Server()
 	s = explain_socket_or_die(AF_INET, SOCK_STREAM, 0);
 }
 
-void Server::bind(int port)
+int Server::accept()
 {
+	return explain_accept_or_die(s, 0, 0);
+}
+
+void Server::run(int port) {
+	// bind to port
 	struct sockaddr_in serv_addr;
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
@@ -48,25 +55,30 @@ void Server::bind(int port)
 
 	// allow reusing recently closed socket
 	int reuse = 1;
-	explain_setsockopt_on_error(s, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+	setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
 	// bind to address
-	explain_bind_or_die(s, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-}
+	bind(s, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+	listen();
 
-void Server::listen(int backlog)
-{
+	// start listening for connections
+	int backlog = 5;
 	explain_listen_or_die(s, backlog);
-}
 
-int Server::accept()
-{
-	return explain_accept_or_die(s, 0, 0);
+	r = true;
+	while(r) {
+		// warte auif eingehende Verbindung
+		int cs = accept(s, 0, 0);
+		if(cs < 0)
+			cout << explain_accept(cs, s, 0, 0) << endl;
+		else
+			onAccept(cs);
+	}
 }
 
 Server::~Server()
 {
-	explain_close_or_die(s);
+	close(s);
 }
 
 Client::Client()
