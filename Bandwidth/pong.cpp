@@ -5,6 +5,9 @@
 #include <malloc.h>
 #include <stdio.h>
 
+#include <iostream>
+using std::cout;
+
 #include "net.h"
 
 class PongServer : public Server {
@@ -12,19 +15,48 @@ class PongServer : public Server {
 		// prepare array for receiving data. 200MB Maximum here.
 		char *buffer = (char *)malloc(0x100000*200);
 
-		// receive data size
-		printf("Waiting for data size\n");
-		size_t size;
-		synchronous_recv(_c, (char *)&size, sizeof(size));
-		printf("Expected data size: %i\n", size);
+		// while the connection stands, do the pong-ing
+		while(true) {
+			// transmission state variables
+			size_t recvcount;
+			size_t recvwanted;
+			size_t writecount;
+			size_t writewanted;
+		  
+			// receive data size
+			printf("Waiting for data size\n");
+			size_t size;
+			recvwanted = sizeof(size);
+			recvcount = 0;
+			while(recvcount < recvwanted) {
+				int e = explain_read_or_die(cs, (&size)+recvcount, recvwanted-recvcount);
+				if(e < 0) {}
+				recvcount += e;
+			}
 
-		// now read the data
-		synchronous_recv(_c, buffer, size);
-		printf("Data received completely\n");
+			cout << "Expected data size is " << size << endl;
+			
+			// Now read the actual data
+			recvwanted = size;
+			recvcount = 0;
+			while(recvcount < recvwanted) {
+				int e = explain_read_or_die(cs, buffer+recvcount, recvwanted-recvcount);
+				if(e < 0) {}
+				recvcount += e;
+			}
+			cout << "Data received completely" << endl;
 
-		// send the data back
-		printf("Sending the data back\n");
-		synchronous_send(_c, buffer, size);
+			// send the data back
+			writewanted = size;
+			writecount = 0;
+			while(writecount < writewanted) {
+				int e = explain_write_or_die(cs, buffer+writecount, writewanted-writecount);
+				if(e < 0) {}
+				writecount += e;
+			}
+			cout << "Data senbt back completely" << endl;
+		}
+
 		free(buffer);
 	}
 }
