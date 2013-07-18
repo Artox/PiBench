@@ -2,18 +2,18 @@
  * Listens on port 1423 and sends all packets back
  */
 
-#define _FILE_OFFSET_BITS 64
-
 #include <malloc.h>
 #include <stdio.h>
 
 #include <cstdlib>
 using std::atoi;
+#include <vector>
+using namespace std;
 
 #include "net.h"
 #include "../Timer/Timer.hpp"
 
-void run(const char *hostname, int port, size_t bytes);
+void run(Client *cl, int N, size_t bytes, char *data, char *buffer);
 
 int main(int argc, char *argv[])
 {
@@ -22,52 +22,76 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	// read options
 	const char *hostname = argv[1];
 	int port = atoi(argv[2]);
-	size_t stepsize = 0x100000; // 1MB
-	for(size_t i = 1; i <= 64; i++)
-	{
-		run(hostname, port, i*stepsize);
+
+	// allocate required memory
+	char *data = (char *)malloc(0x100000*10);
+	char *buffer = (char *)malloc(0x100000*10);
+	// TODO: fill with random data
+
+	// connect
+	Client *cl = new Client();
+	cl->connect(hostname, port);
+
+	// Benchmark
+	int N = 10;
+	// 1 byte seems special, do it one time in advance
+	run(cl, N, 1, data, buffer);
+	// 1B-1KB in B-steps
+	for(unsigned int i = 1; i <= 0x400; i++) {
+		run(cl, N, i, data, buffer);
 	}
+	// 1KB-1MB in KB-steps
+	for(unsigned int i = 1; i <= 0x400; i++) {
+		run(cl, N, 0x400*i, data, buffer);
+	}
+	// 1MB-10MB in MB-steps
+	for(unsigned int i = 1; i <= 10; i++) {
+		run(cl, N, 0x100000*i, data, buffer);
+	}
+	// doing 1 Byte again just to be sure
+	run(cl, N, 1, data, buffer);
+
+	// Close connection
+	delete cl;
+
+	// free memory
+	free(buffer),
+	free(data);
 
 	return 0;
 }
 
-void run(const char *hostname, int port, size_t bytes)
+void run(Client *cl, int N, size_t bytes, char *data, char *buffer)
 {
 	// Timer
 	Timer timer;
 
-	// Create a Client
-	Client *cl = new Client();;
+	vector<uint32_t> times(N);
+	for(int i = 0; i < N; i++)
+	{
+		// send size
+		cl->synchronous_send((char *)&bytes, sizeof(bytes));
 
-	// connect to server
-	cl->connect(hostname, port);
-	fprintf(stderr, "Connected.\n");
+		// send and receive the data
+		timer.start();
+		cl->synchronous_send(data, bytes);
+		cl->synchronous_recv(buffer, bytes);
+		timer.stop();
 
-	// Allocate Memory
-	size_t size = bytes; // 1MB
-	char *data = (char *)malloc(size);
-	char *buffer = (char *)malloc(size);
+		// store time
+		times[i] = timer.milliseconds();
+	}
 
-	// send data
-	cl->synchronous_send((char *)&size, sizeof(size));
-	timer.start();
-	cl->synchronous_send(data, size);
-	fprintf(stderr, "Sent %u bytes.\n", size);
+	// find lowest time
+	uint32_t min_time = times[0];
+	for(int i = 1; i < N; i++)
+		if(times[i] < min_time)
+			min_time = times[i];
 
-	// now read the data
-	cl->synchronous_recv(buffer, size);
-	timer.stop();
-
-	free(buffer);
-	free(data);
-
-	//printf("Sending and Receiving %uB(%ukB; %uMB) took %ums\n", size, size/0x400, size/0x100000, timer.milliseconds());
+	printf("Sending and Receiving %uB(%ukB; %uMB) took at minimum %ums\n", bytes, bytes/0x400, bytes/0x100000, min_time);
 	// simple output for automatic parsing
-	printf("%u;%u\n", bytes, timer.milliseconds());
-
-	// end
-	delete cl;
-	return;
+	//printf("%u;%u\n", bytes, min_time);
 }

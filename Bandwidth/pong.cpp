@@ -10,9 +10,6 @@ using namespace std;
 
 #include "net.h"
 
-#define _FILE_OFFSET_BITS 64
-#include <libexplain/read.h>
-#include <libexplain/write.h>
 #include <fcntl.h>
 
 class PongServer : public Server {
@@ -22,51 +19,75 @@ public:
 		char *buffer = (char *)malloc(0x100000*200);
 
 		// set non-blocking mode
-		int flags;
-		flags = fcntl(cs, F_GETFD);
-		fcntl(cs, F_SETFD, flags|O_NONBLOCK);
-		
+		// int flags;
+		// flags = fcntl(cs, F_GETFD);
+		// int x = fcntl(cs, F_SETFD, flags|O_NONBLOCK);
+
 		// while the connection stands, do the pong-ing
-		while(true) {
+		bool run = true;
+		while(run) {
 			// transmission state variables
 			size_t recvcount;
 			size_t recvwanted;
 			size_t writecount;
 			size_t writewanted;
-		  
+
 			// receive data size
-			printf("Waiting for data size\n");
+			// printf("Waiting for data size\n");
 			size_t size;
 			recvwanted = sizeof(size);
 			recvcount = 0;
 			while(recvcount < recvwanted) {
-				int e = explain_read_or_die(cs, (&size)+recvcount, recvwanted-recvcount);
-				if(e < 0) {}
+				int e = read(cs, (&size)+recvcount, recvwanted-recvcount);
+				if(e == 0) {
+					// This means EOF, the client has closed
+					// get out of endless loop
+					run = false;
+					break;
+				} else if(e < 0) {
+					printf("read encountered error %i\n", e);
+				}
 				recvcount += e;
 			}
+			if(!run)
+				break;
 
-			cout << "Expected data size is " << size << endl;
-			
+			//cout << "Expected data size is " << size << endl;
+
 			// Now read the actual data
 			recvwanted = size;
 			recvcount = 0;
 			while(recvcount < recvwanted) {
-				int e = explain_read_or_die(cs, buffer+recvcount, recvwanted-recvcount);
-				if(e < 0) {}
+				int e = read(cs, buffer+recvcount, recvwanted-recvcount);
+				if(e == 0) {
+					// This means EOF, the client has closed
+					// get out of endless loop
+				  run = false;
+					break;
+				} else if(e < 0) {
+					printf("read encountered error %i\n", e);
+				}
 				recvcount += e;
 			}
-			cout << "Data received completely" << endl;
+			if(!run)
+				break;
+			//cout << "Data received completely" << endl;
 
 			// send the data back
 			writewanted = size;
 			writecount = 0;
 			while(writecount < writewanted) {
-				int e = explain_write_or_die(cs, buffer+writecount, writewanted-writecount);
-				if(e < 0) {}
+				int e = write(cs, buffer+writecount, writewanted-writecount);
+				if(e < 0) {
+					printf("write encountered error %i\n", e);
+				}
 				writecount += e;
 			}
-			cout << "Data senbt back completely" << endl;
+			//cout << "Data sent back completely" << endl;
 		}
+
+		// Close socket
+		close(cs);
 
 		free(buffer);
 	}

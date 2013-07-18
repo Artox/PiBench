@@ -1,16 +1,5 @@
 #include "net.h"
 
-#define _FILE_OFFSET_BITS 64
-
-#include <libexplain/accept.h>
-#include <libexplain/bind.h>
-#include <libexplain/close.h>
-#include <libexplain/connect.h>
-#include <libexplain/listen.h>
-#include <libexplain/read.h>
-#include <libexplain/setsockopt.h>
-#include <libexplain/socket.h>
-#include <libexplain/write.h>
 #include <malloc.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -37,7 +26,7 @@ const size_t Packet::GetSize()
 
 Server::Server()
 {
-	s = explain_socket_or_die(AF_INET, SOCK_STREAM, 0);
+	s = socket(AF_INET, SOCK_STREAM, 0);
 }
 
 void Server::run(int port) {
@@ -57,14 +46,15 @@ void Server::run(int port) {
 
 	// start listening for connections
 	int backlog = 5;
-	explain_listen_or_die(s, backlog);
+	listen(s, backlog);
 
 	r = true;
 	while(r) {
 		// warte auif eingehende Verbindung
+		cout << "Waiting for new Connection" << endl;
 		int cs = accept(s, 0, 0);
 		if(cs < 0)
-			cout << explain_errno_accept(cs, s, 0, 0) << endl;
+			cout << "accept encountered error " << cs << endl;
 		else
 			onAccept(cs);
 	}
@@ -77,7 +67,7 @@ Server::~Server()
 
 Client::Client()
 {
-	s = explain_socket_or_die(AF_INET, SOCK_STREAM, 0);
+	s = socket(AF_INET, SOCK_STREAM, 0);
 }
 
 void Client::connect(const char *hostname, int port)
@@ -91,7 +81,7 @@ void Client::connect(const char *hostname, int port)
 	serv_addr.sin_port = htons(port);
 
 	// connect
-	explain_connect_or_die(s, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+	::connect(s, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 }
 
 void Client::synchronous_send(char *data, const size_t size)
@@ -102,11 +92,6 @@ void Client::synchronous_send(char *data, const size_t size)
 void Client::synchronous_recv(char *buffer, size_t bytes)
 {
 	::synchronous_recv(s, buffer, bytes);
-}
-
-void Client::disconnect() {
-	printf("Disconnecting");
-	shutdown(s, SHUT_RDWR);
 }
 
 Client::~Client()
@@ -120,7 +105,7 @@ void synchronous_send(int socket, char *data, size_t size)
 	char *ptr = data;
 	do {
 		//fprintf(stderr, "Sending %u bytes\n", bytes_left);
-		int bytes = explain_write_or_die(socket, ptr, bytes_left);
+		int bytes = write(socket, ptr, bytes_left);
 		ptr += bytes;
 		bytes_left -= bytes;
 	} while(bytes_left > 0);
@@ -132,7 +117,7 @@ void synchronous_recv(int socket, char *buffer, size_t bytes)
 	char *ptr = buffer;
 	do {
 		//fprintf(stderr, "Waiting for %u bytes\n", bytes_left);
-		int bytes = explain_read_or_die(socket, ptr, bytes_left);
+		int bytes = read(socket, ptr, bytes_left);
 		ptr += bytes;
 		bytes_left -= bytes;
 	} while(bytes_left > 0);

@@ -48,7 +48,6 @@ public:
 	void connect(const char *hostname, int port);
 	void synchronous_send(char *data, size_t size);
 	void synchronous_recv(char *buffer, size_t bytes);
-	void disconnect();
 	~Client();
 };
 

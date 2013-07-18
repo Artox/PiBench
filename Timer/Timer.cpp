@@ -2,21 +2,21 @@
 #include "Timer.hpp"
 
 #include <sys/time.h>
-#include <libexplain/gettimeofday.h>
 
 Timer::Timer()
 {
-	
+	start();
+	t_end = t_start;
 }
 
 void Timer::start()
 {
-	explain_gettimeofday_or_die(&t_start, 0);
+	gettimeofday(&t_start, 0);
 }
 
 void Timer::stop()
 {
-	explain_gettimeofday_or_die(&t_end, 0);
+	gettimeofday(&t_end, 0);
 }
 
 /*void Timer::continue_()

@@ -1,6 +1,6 @@
 CXX=g++
 CXXFLAGS=-std=c++0x -O2
-LDFLAGS=-lexplain -L../Timer/.libs
+LDFLAGS=-L../Timer/.libs
 
 all: ping pong
 
