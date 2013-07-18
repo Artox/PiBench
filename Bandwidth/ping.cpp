@@ -39,10 +39,10 @@ void run(const char *hostname, int port, size_t bytes)
 	Timer timer;
 
 	// Create a Client
-	Client cl;
+	Client *cl = new Client();;
 
 	// connect to server
-	cl.connect(hostname, port);
+	cl->connect(hostname, port);
 	fprintf(stderr, "Connected.\n");
 
 	// Allocate Memory
@@ -51,13 +51,13 @@ void run(const char *hostname, int port, size_t bytes)
 	char *buffer = (char *)malloc(size);
 
 	// send data
-	cl.synchronous_send((char *)&size, sizeof(size));
+	cl->synchronous_send((char *)&size, sizeof(size));
 	timer.start();
-	cl.synchronous_send(data, size);
+	cl->synchronous_send(data, size);
 	fprintf(stderr, "Sent %u bytes.\n", size);
 
 	// now read the data
-	cl.synchronous_recv(buffer, size);
+	cl->synchronous_recv(buffer, size);
 	timer.stop();
 
 	free(buffer);
@@ -68,5 +68,6 @@ void run(const char *hostname, int port, size_t bytes)
 	printf("%u;%u\n", bytes, timer.milliseconds());
 
 	// end
+	delete cl;
 	return;
 }

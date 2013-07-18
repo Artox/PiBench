@@ -24,12 +24,14 @@ public:
 	// Erzeugt einen neuen Server an gegebenem Port
 	Server();
 
+	void setnonblocking();
+	
 	// Server MainLoop. Wartet auf Eingehende Verbindungen
 	void run(int port);
 
 	// Wird bei Eingang einer neuen Verbindung ausgeführt.
 	virtual void onAccept(int cs) = 0;
-	
+
 	// Beendet den Server *irgendwann*
 	void shutdown();
 
@@ -46,6 +48,7 @@ public:
 	void connect(const char *hostname, int port);
 	void synchronous_send(char *data, size_t size);
 	void synchronous_recv(char *buffer, size_t bytes);
+	void disconnect();
 	~Client();
 };
 

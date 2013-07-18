@@ -18,7 +18,7 @@
 #include <cstring>
 using std::memset;
 #include <iostream>
-using std::cout;
+using namespace std;
 
 Packet::Packet(size_t _size) : size(_size), buffer(0)
 {
@@ -40,11 +40,6 @@ Server::Server()
 	s = explain_socket_or_die(AF_INET, SOCK_STREAM, 0);
 }
 
-int Server::accept()
-{
-	return explain_accept_or_die(s, 0, 0);
-}
-
 void Server::run(int port) {
 	// bind to port
 	struct sockaddr_in serv_addr;
@@ -59,7 +54,6 @@ void Server::run(int port) {
 
 	// bind to address
 	bind(s, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-	listen();
 
 	// start listening for connections
 	int backlog = 5;
@@ -70,7 +64,7 @@ void Server::run(int port) {
 		// warte auif eingehende Verbindung
 		int cs = accept(s, 0, 0);
 		if(cs < 0)
-			cout << explain_accept(cs, s, 0, 0) << endl;
+			cout << explain_errno_accept(cs, s, 0, 0) << endl;
 		else
 			onAccept(cs);
 	}
@@ -110,6 +104,11 @@ void Client::synchronous_recv(char *buffer, size_t bytes)
 	::synchronous_recv(s, buffer, bytes);
 }
 
+void Client::disconnect() {
+	printf("Disconnecting");
+	shutdown(s, SHUT_RDWR);
+}
+
 Client::~Client()
 {
 	close(s);
@@ -120,7 +119,7 @@ void synchronous_send(int socket, char *data, size_t size)
 	size_t bytes_left = size;
 	char *ptr = data;
 	do {
-		fprintf(stderr, "Sending %u bytes\n", bytes_left);
+		//fprintf(stderr, "Sending %u bytes\n", bytes_left);
 		int bytes = explain_write_or_die(socket, ptr, bytes_left);
 		ptr += bytes;
 		bytes_left -= bytes;
@@ -132,7 +131,7 @@ void synchronous_recv(int socket, char *buffer, size_t bytes)
 	size_t bytes_left = bytes;
 	char *ptr = buffer;
 	do {
-		fprintf(stderr, "Waiting for %u bytes\n", bytes_left);
+		//fprintf(stderr, "Waiting for %u bytes\n", bytes_left);
 		int bytes = explain_read_or_die(socket, ptr, bytes_left);
 		ptr += bytes;
 		bytes_left -= bytes;

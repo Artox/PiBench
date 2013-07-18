@@ -34,8 +34,8 @@ void STREAM_copy(uint32_t *__restrict__ src, uint32_t *__restrict__ dest, size_t
  * array size should be 4x128KB=512KB
  */
 
-// data
-#define NUM_BYTES (0x100000*24)
+// data 512KB
+#define NUM_BYTES (0x400*512)
 uint32_t src[NUM_BYTES/sizeof(uint32_t)];
 uint32_t dest[NUM_BYTES/sizeof(uint32_t)];
 

@@ -6,15 +6,26 @@
 #include <stdio.h>
 
 #include <iostream>
-using std::cout;
+using namespace std;
 
 #include "net.h"
 
+#define _FILE_OFFSET_BITS 64
+#include <libexplain/read.h>
+#include <libexplain/write.h>
+#include <fcntl.h>
+
 class PongServer : public Server {
-	public void onAccept(int cs) {
+public:
+	void onAccept(int cs) {
 		// prepare array for receiving data. 200MB Maximum here.
 		char *buffer = (char *)malloc(0x100000*200);
 
+		// set non-blocking mode
+		int flags;
+		flags = fcntl(cs, F_GETFD);
+		fcntl(cs, F_SETFD, flags|O_NONBLOCK);
+		
 		// while the connection stands, do the pong-ing
 		while(true) {
 			// transmission state variables
@@ -59,7 +70,7 @@ class PongServer : public Server {
 
 		free(buffer);
 	}
-}
+};
 
 int main()
 {
